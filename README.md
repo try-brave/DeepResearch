@@ -281,11 +281,3 @@ data: {"query":"2025 AI agent breakthroughs","results_count":12}
 
 ---
 
-## License
-
-
----
-
-<p align="center">
-  <sub>Built with ❤️ by 2026jy · 广东工业大学</sub>
-</p>
