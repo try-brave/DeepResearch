@@ -256,7 +256,24 @@ class WorkflowService:
                     }
                 )
             except Exception as exc:
-                emit({"type": "error", "message": str(exc)})
+                error_msg: str
+                exc_name = type(exc).__name__
+                exc_str = str(exc)
+
+                # 常见业务错误 → 用户友好提示
+                if "InvalidApiKey" in exc_str or "401" in exc_str:
+                    error_msg = "API Key 无效，请检查 .env 中的 DASHSCOPE_API_KEY 和 DASHSCOPE_HTTP_BASE_URL"
+                elif "ConnectionError" in exc_name or "ConnectTimeout" in exc_name:
+                    error_msg = "连接模型服务失败，请检查网络和 DASHSCOPE_HTTP_BASE_URL 地址"
+                elif "KeyError" in exc_name and "request" in exc_str:
+                    error_msg = "API 认证失败，请确认 API Key 格式正确"
+                elif exc_str and len(exc_str) < 200:
+                    # 简短的异常消息直接透传
+                    error_msg = f"[{exc_name}] {exc_str}"
+                else:
+                    error_msg = f"服务异常 ({exc_name})，请检查后端日志"
+
+                emit({"type": "error", "message": error_msg})
             finally:
                 emit({"type": "__done__"})
 

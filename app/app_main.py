@@ -1,5 +1,16 @@
 """
 """
+# MUST be the very first imports: load .env BEFORE dashscope is imported anywhere,
+# because dashscope.common.env reads DASHSCOPE_HTTP_BASE_URL at import time.
+from pathlib import Path
+import os
+from dotenv import load_dotenv
+
+_PROJECT_ROOT = Path(__file__).resolve().parents[1]
+_ENV_PATH = _PROJECT_ROOT / ".env"
+if _ENV_PATH.exists():
+    load_dotenv(_ENV_PATH)
+
 import logging
 
 from fastapi import FastAPI

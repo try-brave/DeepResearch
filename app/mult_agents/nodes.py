@@ -10,70 +10,10 @@ from langchain_core.messages import HumanMessage
 
 from .state import ResearchState
 from .tools import bocha_web_search_records, search_knowledge_base_records
+from .utils import colorize, collect_tool_calls, emit, log_inputs, with_memory_context
 
 
 logger = logging.getLogger("mult_agents")
-
-
-ANSI = {
-    "reset": "\033[0m",
-    "cyan": "\033[36m",
-    "magenta": "\033[35m",
-    "yellow": "\033[33m",
-    "green": "\033[32m",
-    "red": "\033[31m",
-}
-
-
-def colorize(text: str, color: str) -> str:
-    if os.getenv("NO_COLOR"):
-        return text
-    code = ANSI.get(color, "")
-    if not code:
-        return text
-    return f"{code}{text}{ANSI['reset']}"
-
-
-def emit(node: str, content: str):
-    preview = content.replace("\n", " ")
-    if len(preview) > 400:
-        preview = preview[:400] + "..."
-    logger.info("%s 输出: %s", colorize(f"[{node}]", "yellow"), preview)
-
-
-def collect_tool_calls(messages) -> tuple[list, list]:
-    tools = []
-    tool_outputs = []
-    for msg in messages:
-        tool_calls = getattr(msg, "tool_calls", None)
-        if tool_calls:
-            for call in tool_calls:
-                name = call.get("name") if isinstance(call, dict) else None
-                if name:
-                    tools.append(name)
-        name = getattr(msg, "name", None)
-        msg_type = getattr(msg, "type", None)
-        if msg_type == "tool" and name:
-            tools.append(name)
-            output = getattr(msg, "content", "")
-            if output:
-                tool_outputs.append(f"{name}: {output}")
-    return tools, tool_outputs
-
-
-def with_memory_context(state: ResearchState, user_prompt: str) -> str:
-    memory_context = state.get("memory_context", "").strip()
-    if not memory_context:
-        return user_prompt
-    return f"{user_prompt}\n\n[跨会话记忆]\n{memory_context}"
-
-
-def log_inputs(node: str, agent_name: str, payload: dict):
-    preview = {
-        key: (value[:200] + "..." if isinstance(value, str) and len(value) > 200 else value)
-        for key, value in payload.items()
-    }
-    logger.info("%s 输入 | agent=%s | data=%s", colorize(f"[{node}]", "cyan"), colorize(agent_name, "magenta"), preview)
 
 
 def detect_intent(query: str) -> str:
