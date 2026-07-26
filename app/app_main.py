@@ -1,7 +1,3 @@
-"""
-"""
-# MUST be the very first imports: load .env BEFORE dashscope is imported anywhere,
-# because dashscope.common.env reads DASHSCOPE_HTTP_BASE_URL at import time.
 from pathlib import Path
 import os
 from dotenv import load_dotenv
